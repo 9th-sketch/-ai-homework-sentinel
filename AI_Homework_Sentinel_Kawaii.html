@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI Homework Sentinel — Kawaii Edition</title>
+<style>
+:root{--pink:#ff9fc4;--lav:#b9a8ff;--blue:#a8dfff;--cream:#fff8fc;--green:#72d6aa;--red:#ff8d9d;--text:#44364d}
+*{box-sizing:border-box}body{margin:0;background:linear-gradient(135deg,#fff1f8,#f2efff 55%,#eefaff);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;color:var(--text)}
+.app{max-width:430px;margin:auto;min-height:100vh;background:rgba(255,255,255,.72);box-shadow:0 0 35px #9d8db822}
+header{padding:24px 20px 18px;background:linear-gradient(135deg,#ffb6d2,#c5b9ff);border-radius:0 0 30px 30px;color:white}
+.logo{font-size:14px;font-weight:800;opacity:.9}.title{font-size:27px;font-weight:900;margin:4px 0}.subtitle{font-size:13px}
+nav{display:flex;gap:7px;padding:12px;background:white;position:sticky;top:0;z-index:5;border-bottom:1px solid #eee}
+nav button{flex:1;border:0;background:#f6f1f7;color:#777;border-radius:12px;padding:9px 3px;font-size:11px;font-weight:700}
+nav button.active{background:#ffd5e5;color:#b74474}
+main{padding:16px}.page{display:none}.page.active{display:block}
+.card{background:white;border:1px solid #f0e7ef;border-radius:20px;padding:15px;margin-bottom:14px;box-shadow:0 5px 18px #80608012}
+h2{font-size:18px;margin:0 0 12px}.hero{background:linear-gradient(135deg,#fff0f7,#eee9ff)}
+.mascot{font-size:42px;float:right}.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}.stat{padding:12px 6px;text-align:center;border-radius:15px;background:#fff5fa}.stat b{font-size:23px;display:block}.stat span{font-size:11px;color:#777}
+.task{padding:12px;border-radius:16px;background:#fff;box-shadow:0 2px 10px #0000000b;margin:9px 0;border-left:6px solid var(--red)}
+.task.done{border-left-color:#f5bd5c}.task.sent{border-left-color:var(--green)}
+.tasktop{display:flex;justify-content:space-between;gap:8px}.subject{font-size:11px;color:#9b6a86}.deadline{font-size:11px;color:#777;margin-top:4px}
+.status{display:inline-block;margin-top:7px;padding:5px 9px;border-radius:9px;font-size:10px;font-weight:800;background:#ffe3e9;color:#c24c67}
+.task.done .status{background:#fff0c9;color:#a87900}.task.sent .status{background:#dff8eb;color:#27865d}
+button.primary{background:linear-gradient(135deg,#ff8fba,#9d8df4);color:white;border:0;border-radius:14px;padding:12px;width:100%;font-weight:800}
+input,select{width:100%;padding:12px;border:1px solid #eadfea;border-radius:12px;margin:5px 0 10px;background:#fff}
+label{font-size:12px;font-weight:700}
+.ai{background:linear-gradient(135deg,#eeeaff,#eaf8ff);border:0}.ai p{margin:6px 0;font-size:13px;line-height:1.55}
+.chip{display:inline-block;padding:5px 9px;border-radius:99px;background:#fff;font-size:10px;margin:3px}
+.progress{height:10px;background:#eee;border-radius:99px;overflow:hidden}.bar{height:100%;background:linear-gradient(90deg,#ff9fc4,#a895ff);width:0}
+.empty{text-align:center;color:#999;padding:25px 5px;font-size:13px}
+footer{text-align:center;font-size:10px;color:#9b8da0;padding:12px 0 28px}
+</style>
+</head>
+<body>
+<div class="app">
+<header>
+  <div class="logo">🎀 KAWAII STUDY BUDDY</div>
+  <div class="title">AI Homework Sentinel</div>
+  <div class="subtitle">ผู้ช่วยเช็กการบ้าน • สรุปงานค้าง • เตือนงานใกล้ส่ง ✨</div>
+</header>
+
+<nav>
+<button class="active" onclick="showPage('home',this)">🏠 หน้าหลัก</button>
+<button onclick="showPage('tasks',this)">📝 การบ้าน</button>
+<button onclick="showPage('add',this)">➕ เพิ่มงาน</button>
+<button onclick="showPage('ai',this)">🤖 AI</button>
+</nav>
+
+<main>
+<section id="home" class="page active">
+<div class="card hero">
+<span class="mascot">🎀</span>
+<h2>สวัสดี<span id="userGreeting">เพื่อน</span>! 💗</h2>
+<div style="font-size:12px">มาดูกันว่าวันนี้มีอะไรต้องส่งบ้างนะ</div>
+<button onclick="changeName()" style="margin-top:10px;border:0;border-radius:10px;padding:8px 12px;background:#fff;color:#a84772;font-weight:700;font-size:11px">✏️ เปลี่ยนชื่อ</button>
+</div>
+<div class="stats">
+<div class="stat"><b id="total">0</b><span>งานทั้งหมด</span></div>
+<div class="stat"><b id="pending">0</b><span>ยังไม่ส่ง</span></div>
+<div class="stat"><b id="sent">0</b><span>ส่งแล้ว</span></div>
+</div>
+<div class="card">
+<h2>⏰ งานที่ใกล้ถึงกำหนด</h2>
+<div id="urgent"></div>
+</div>
+<div class="card ai">
+<h2>🤖 AI Smart Reminder</h2>
+<div id="reminder">เพิ่มการบ้านก่อน แล้ว AI จะช่วยสรุปให้ ✨</div>
+</div>
+</section>
+
+<section id="tasks" class="page">
+<div class="card"><h2>📝 รายการการบ้าน</h2><div id="taskList"></div></div>
+</section>
+
+<section id="add" class="page">
+<div class="card">
+<h2>➕ เพิ่มการบ้านใหม่</h2>
+<label>ชื่อการบ้าน</label><input id="name" placeholder="เช่น แบบฝึกหัดเรื่องเซต">
+<label>วิชา</label><input id="subject" placeholder="เช่น คณิตศาสตร์">
+<label>กำหนดส่ง</label><input id="deadline" type="datetime-local">
+<button class="primary" onclick="addTask()">💗 บันทึกการบ้าน</button>
+</div>
+</section>
+
+<section id="ai" class="page">
+<div class="card ai">
+<h2>✨ AI Task Summarizer</h2>
+<div id="aiSummary"></div>
+</div>
+<div class="card">
+<h2>📊 ความคืบหน้าการส่งงาน</h2>
+<div id="progressText" class="small"></div>
+<div class="progress"><div id="bar" class="bar"></div></div>
+</div>
+</section>
+</main>
+<footer>AI Homework Sentinel • Kawaii Edition 🎀</footer>
+</div>
+
+<script>
+let tasks=JSON.parse(localStorage.getItem('kawaiiHW')||'[]');
+let userName=localStorage.getItem('kawaiiUserName')||'เพื่อน';
+
+function save(){localStorage.setItem('kawaiiHW',JSON.stringify(tasks));render()}
+function changeName(){
+ let name=prompt('อยากให้แอปเรียกคุณว่าอะไร? 💗',userName);
+ if(name!==null && name.trim()){
+  userName=name.trim();
+  localStorage.setItem('kawaiiUserName',userName);
+  render();
+ }
+}
+function showPage(id,btn){
+ document.querySelectorAll('.page').forEach(x=>x.classList.remove('active'));
+ document.getElementById(id).classList.add('active');
+ document.querySelectorAll('nav button').forEach(x=>x.classList.remove('active'));
+ btn.classList.add('active');
+ render();
+}
+function addTask(){
+ let name=document.getElementById('name').value.trim(),subject=document.getElementById('subject').value.trim(),deadline=document.getElementById('deadline').value;
+ if(!name||!subject||!deadline){alert('กรอกชื่อการบ้าน วิชา และกำหนดส่งให้ครบก่อนน้า 💗');return}
+ tasks.push({id:Date.now(),name,subject,deadline,status:'ยังไม่ทำ'});
+ document.getElementById('name').value='';document.getElementById('subject').value='';document.getElementById('deadline').value='';
+ save();alert('เพิ่มการบ้านแล้ว! 🎀');showPage('tasks',document.querySelectorAll('nav button')[1]);
+}
+function cycle(i){
+ const a=['ยังไม่ทำ','ทำเสร็จแล้ว','ส่งครูแล้ว'];
+ tasks[i].status=a[(a.indexOf(tasks[i].status)+1)%3];save();
+}
+function del(i){if(confirm('ลบการบ้านรายการนี้ไหม?')){tasks.splice(i,1);save()}}
+function fmt(d){return new Date(d).toLocaleString('th-TH',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'})}
+function esc(s){return s.replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]))}
+function taskHTML(t,i){
+ let cls=t.status==='ส่งครูแล้ว'?'sent':t.status==='ทำเสร็จแล้ว'?'done':'';
+ return `<div class="task ${cls}">
+ <div class="tasktop"><b>${esc(t.name)}</b><span class="subject">${esc(t.subject)}</span></div>
+ <div class="deadline">📅 ส่ง ${fmt(t.deadline)}</div>
+ <span class="status">${t.status}</span>
+ <div style="display:flex;gap:6px;margin-top:8px">
+ <button onclick="cycle(${i})" style="flex:1;border:0;border-radius:10px;padding:8px;background:#fff0f6;color:#a84772;font-weight:700;font-size:11px">เปลี่ยนสถานะ</button>
+ <button onclick="del(${i})" style="border:0;border-radius:10px;padding:8px;background:#f3f3f3;color:#777;font-size:11px">ลบ</button></div>
+ </div>`;
+}
+function render(){
+ document.getElementById('userGreeting').textContent=userName;
+ let total=tasks.length,pending=tasks.filter(x=>x.status!=='ส่งครูแล้ว').length,sent=total-pending;
+ document.getElementById('total').textContent=total;document.getElementById('pending').textContent=pending;document.getElementById('sent').textContent=sent;
+ document.getElementById('taskList').innerHTML=total?tasks.map(taskHTML).join(''):'<div class="empty">ยังไม่มีการบ้าน 💕<br>กด “เพิ่มงาน” เพื่อเริ่มใช้งาน</div>';
+ let now=Date.now(), urgent=tasks.filter(x=>x.status!=='ส่งครูแล้ว').sort((a,b)=>new Date(a.deadline)-new Date(b.deadline)).slice(0,3);
+ document.getElementById('urgent').innerHTML=urgent.length?urgent.map((t)=>`<div class="task"><b>${esc(t.name)}</b><div class="deadline">${esc(t.subject)} • ส่ง ${fmt(t.deadline)}</div></div>`).join(''):'<div class="empty">ไม่มีงานค้าง 🎉</div>';
+ let groups={};tasks.filter(x=>x.status!=='ส่งครูแล้ว').forEach(x=>groups[x.subject]=(groups[x.subject]||0)+1);
+ let lines=Object.entries(groups).map(([s,n])=>`• <b>${esc(s)}</b> ${n} งาน`).join('<br>');
+ document.getElementById('aiSummary').innerHTML=pending?`<p>🤖 จากข้อมูลที่บันทึกไว้ ตอนนี้มีงานที่ยังไม่ได้ส่ง <b>${pending} งาน</b></p><p>${lines||'ไม่มีงานค้าง'}</p><p>💡 แนะนำให้เริ่มจากงานที่ใกล้กำหนดส่งที่สุดนะ สู้ๆ! ✨</p>`:'<p>🎉 เก่งมาก! ตอนนี้ไม่มีงานค้างส่งแล้ว</p>';
+ let pct=total?Math.round(sent/total*100):0;document.getElementById('bar').style.width=pct+'%';document.getElementById('progressText').textContent=`ส่งแล้ว ${sent}/${total} งาน (${pct}%)`;
+ document.getElementById('reminder').innerHTML=pending?`วันนี้อย่าลืมเช็กงานนะ 💗 มีงานที่ยังไม่ส่ง <b>${pending} งาน</b> และงานที่ใกล้กำหนดที่สุดคือ <b>${esc(urgent[0]?.name||'—')}</b>`:'🎉 เยี่ยมเลย! ไม่มีงานค้างส่งแล้ว พักได้แป๊บนึงนะ';
+}
+render();
+</script>
+</body>
+</html>
